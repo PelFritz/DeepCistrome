@@ -3,8 +3,8 @@ import numpy as np
 import os
 import pandas as pd
 
-if not os.path.exists('Figures'):
-    os.mkdir('Figures')
+if not os.path.exists('results/Figures'):
+    os.mkdir('results/Figures')
 
 
 def get_predictive_pwms(mod_file):
