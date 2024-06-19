@@ -6,7 +6,7 @@ pd.options.display.width = 0
 
 
 def boxplot_performance():
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(6, 8))
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(5, 8))
     data = []
     for log_file in os.listdir('results'):
         if log_file.endswith('.log'):
@@ -26,15 +26,15 @@ def boxplot_performance():
             data.append(best_val_weighted_aupr)
 
     data = pd.DataFrame(data, columns=['score', 'model type', 'metric'])
-    evals_on_prom = pd.read_csv('results/prom_evals.csv')
-    data = pd.concat([data, evals_on_prom], axis=0)
-    data.replace(to_replace={'di': 'baseline-di', 'si': 'baseline-si'}, inplace=True)
+    data.replace(to_replace={'di': 'baseline-di', 'si': 'baseline-si',
+                             'model': 'genome'}, inplace=True)
     hue_order = sorted(data['model type'].unique())
+    order = sorted(data['metric'].unique())
     g = sns.barplot(data=data, y='score', x='metric', hue='model type', ax=ax, capsize=0.3,
                     palette=['#808000', '#9897A9', '#726EFF', '#ff7926'], hue_order=hue_order,
-                    edgecolor='white')
+                    edgecolor='white', order=order)
     sns.stripplot(y='score', x='metric', hue='model type', data=data, dodge=True, ax=g, edgecolor='k',
-                  linewidth=0.6, palette=['#808000', '#9897A9', '#726EFF', '#ff7926'], alpha=0.5,
+                  linewidth=0.6, palette=['#808000', '#9897A9', '#726EFF'], alpha=0.5,
                   hue_order=hue_order)
     ax.yaxis.grid(True, alpha=0.3)
     ax.xaxis.grid(True, alpha=0.3)
@@ -45,3 +45,27 @@ def boxplot_performance():
 
 boxplot_performance()
 
+
+def boxplot_performance_promoters():
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(5, 8))
+    data = pd.read_csv(filepath_or_buffer='results/prom_evals.csv')
+    data.replace(to_replace={'di': 'baseline-di', 'si': 'baseline-si',
+                             'model': 'promoters'}, inplace=True)
+    print(data.head())
+    hue_order = sorted(data['model type'].unique())
+    order = sorted(data['metric'].unique())
+    g = sns.barplot(data=data, y='score', x='metric', hue='model type', ax=ax, capsize=0.3,
+                    palette=['#808000', '#9897A9', '#726EFF', '#ff7926'], hue_order=hue_order,
+                    edgecolor='white', order=order)
+    sns.stripplot(y='score', x='metric', hue='model type', data=data, dodge=True, ax=g, edgecolor='k',
+                  linewidth=0.6, palette=['#808000', '#9897A9', '#726EFF'], alpha=0.5,
+                  hue_order=hue_order, order=order)
+    ax.yaxis.grid(True, alpha=0.3)
+    ax.xaxis.grid(True, alpha=0.3)
+    ax.set_axisbelow(True)
+    plt.savefig(f"results/Figures/performance_multilabel_promoters.svg", bbox_inches='tight', dpi=300, 
+                format='svg')
+    plt.show()
+
+
+boxplot_performance_promoters()
