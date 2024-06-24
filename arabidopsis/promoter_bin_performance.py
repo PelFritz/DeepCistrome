@@ -5,6 +5,7 @@ from pyfaidx import Fasta
 from utils import one_hot_encode
 import numpy as np
 from tensorflow.keras.models import load_model
+from tensorflow.keras.backend import clear_session
 import matplotlib.pyplot as plt
 import os
 sns.set_theme(style="whitegrid")
@@ -18,17 +19,25 @@ def prepare_coords(annot, idx):
     annot = annot[annot['Feature'] == 'gene']
     annot = annot[['Chromosome', 'Start', 'End', 'Strand']]
     annot = annot[annot['Chromosome'].isin(['1', '2', '3', '4', '5'])]
-    coords = []
+    coords_proms, coords_terms = [], []
     for chrom, gene_start, gene_end, strand in annot.values:
         if strand == '+':
             start = max(0, gene_start-4000)
-            coords.append([chrom, start + (idx * 250), start + ((idx + 1) * 250)])
+            end = max(0, gene_end-500)
+            coords_proms.append([chrom, start + (idx * 250), start + ((idx + 1) * 250)])
+            coords_terms.append([chrom, end + (idx * 250), end + ((idx + 1) * 250)])
         else:
             start = gene_end+4000
-            coords.append([chrom, start - ((idx+1) * 250), start - (idx * 250)])
-    coords = pd.DataFrame(coords)
-    coords.drop_duplicates(subset=[0, 1, 2], inplace=True, keep='first')
-    coords.to_csv(path_or_buf=f"data/promoter_bins/Bin_{idx+1}.bed", sep="\t", index=False, header=False)
+            end = max(0, gene_start+500)
+            coords_proms.append([chrom, max(0, start - ((idx + 1) * 250)), max(0, start - (idx * 250))])
+            coords_terms.append([chrom, max(0, end - ((idx + 1) * 250)), max(0, end - (idx * 250))])
+
+    coords_proms = pd.DataFrame(coords_proms)
+    coords_proms.drop_duplicates(subset=[0, 1, 2], inplace=True, keep='first')
+    coords_proms.to_csv(path_or_buf=f"data/promoter_bins/Bin_{idx + 1}.bed", sep="\t", index=False, header=False)
+    coords_terms = pd.DataFrame(coords_terms)
+    coords_terms.drop_duplicates(subset=[0, 1, 2], inplace=True, keep='first')
+    coords_terms.to_csv(path_or_buf=f"data/promoter_bins/Bin_{idx + 20}.bed", sep="\t", index=False, header=False)
 
 
 def prepare_data(genome, bin_tab):
@@ -49,11 +58,19 @@ for idx in range(4500//250):
         prepare_coords(annot='data/annotation/Arabidopsis_thaliana.TAIR10.59.gtf',
                        idx=idx)
         os.system(f"bedtools intersect -a data/promoter_bins/Bin_{idx+1}.bed -b data/peaks/*.bed -C -filenames -F 0.7 > data/promoter_bins/bin_{idx+1}_overlap.bed")
-    print(f'Done with Bin {idx+1}')
+        os.system(f"bedtools intersect -a data/promoter_bins/Bin_{idx+20}.bed -b data/peaks/*.bed -C -filenames -F 0.7 > data/promoter_bins/bin_{idx+20}_overlap.bed")
+
+    print(f'Done with Bin {idx+1} and {idx+20}')
+
 
 bin_idx, num_tfs_true, num_tfs_pred = [], [], []
+# add an empty bin to create space between promoter and terminators
+bin_idx.append(19)
+num_tfs_true.append(0)
+num_tfs_pred.append(0)
 for overlap_file in os.listdir("data/promoter_bins/"):
     if overlap_file.endswith("_overlap.bed"):
+        print(overlap_file)
         bin_df = pd.read_csv(filepath_or_buffer=f"data/promoter_bins/{overlap_file}", sep="\t", header=None,
                              dtype={0: str, 1: int, 2: int, 3: str, 4: int})
 
@@ -68,6 +85,7 @@ for overlap_file in os.listdir("data/promoter_bins/"):
         for chrom_name in [1, 2, 3, 4, 5]:
             enc_seqs, targets = prepare_data(genome='data/genome/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa',
                                              bin_tab=bin_df[bin_df['chrom'] == chrom_name].drop(columns='chrom'))
+            clear_session()
             model = load_model(f"saved_models/model_chrom_{chrom_name}_model.h5")
             preds = model.predict(enc_seqs)
             preds = preds > 0.5
@@ -93,22 +111,29 @@ tbs_data_pred = tbs_data_pred.groupby(by='Bin').sum().reset_index()
 tbs_data_pred.sort_values(by='Bin', ascending=True, inplace=True)
 perc_pred_cor = tbs_data_pred['num_tbs'].values / tbs_data_true['num_tbs'].values
 tbs_data_pred['num_tbs'] = tbs_data_pred['num_tbs']/tbs_data_pred['num_tbs'].sum()
+tbs_data_pred['region'] = ['promoter' if idx <= 18 else 'terminator' for idx in range(1, 38)]
 
-
-fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(15, 6))
-sns.barplot(x='Bin', y='num_tbs', data=tbs_data_pred, ax=ax, estimator='sum', errorbar=None, color='silver')
-sns.pointplot(data=tbs_data_pred, x='Bin', y='num_tbs', errorbar=None, ax=ax, estimator='sum', color='cornflowerblue')
-ax.set_ylim(0.05, 0.08)
+fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(18, 6))
+sns.barplot(x='Bin', y='num_tbs', hue='region', data=tbs_data_pred, ax=ax, estimator='sum', errorbar=None,
+            palette=['#F4CE14', '#379777'])
+sns.pointplot(data=tbs_data_pred[tbs_data_pred['region'] == 'promoter'], x='Bin', y='num_tbs', errorbar=None,
+              ax=ax, estimator='sum', color='#EE4E4E')
+terms = tbs_data_pred[tbs_data_pred['region'] == 'terminator']
+terms = terms[terms['Bin'] > 19]
+sns.pointplot(data=terms, x='Bin', y='num_tbs', errorbar=None, ax=ax, estimator='sum', color='#EE4E4E')
+ax.set_ylim(0.024, 0.050)
 ax.yaxis.grid(True, alpha=0.3)
 ax.xaxis.grid(True, alpha=0.3)
-ax.plot(15.5, 0.075, "*", markersize=10, color="teal")
+ax.plot(15.5, 0.040, "*", markersize=10, color='#45474B')
+ax.plot(20.5, 0.040, "*", markersize=10, color='#45474B')
 
 # Annotate bars with percentage of actual binding even predicted correctly
 for p, perc in zip(ax.patches, perc_pred_cor):
     ax.annotate(round(perc*100, 1), xy=(p.get_x()+p.get_width()/2, p.get_height()+0.001), ha='center', va='bottom',
-                color='teal')
+                color='#45474B', fontsize=10)
 ax.set_xticklabels(['- 4000', '', '- 3500', '', '- 3000', '', '- 2500', '', '- 2000', '', '- 1500', '', '- 1000', '',
-                    '- 500', '', '', '500'])
+                    '- 500', '', '', '500', '', '- 500', '', '', '500', '', '1000', '',
+                    '1500', '', '2000', '', '2500', '', '3000', '', '3500', '', '4000'])
 fig.tight_layout()
 plt.savefig(f"results/Figures/performance_per_prom_bin.svg", bbox_inches='tight',
             dpi=300, format='svg')
