@@ -45,6 +45,6 @@ motifPiles(phylog=phylog, pfms=motifs, pfms2=sig,
                          sample(colors(), 50),
                          sample(colors(), 50)),
            motifScale="none",
-           plotIndex=TRUE, r.tree = 0.25)
+           plotIndex=TRUE, r.tree = 0.25, clabel.leaves = 3)
 dev.off()
 
