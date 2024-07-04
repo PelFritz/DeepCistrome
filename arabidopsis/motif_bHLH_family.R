@@ -44,7 +44,7 @@ motifPiles(phylog=phylog, pfms=motifs, pfms2=sig,
            col.anno=list(sample(colors(), 50),
                          sample(colors(), 50),
                          sample(colors(), 50)),
-           motifScale="logarithmic",
-           plotIndex=TRUE)
+           motifScale="none",
+           plotIndex=TRUE, r.tree = 0.25)
 dev.off()
 
