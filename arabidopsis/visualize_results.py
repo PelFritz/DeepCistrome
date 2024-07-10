@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 pd.options.display.width = 0
 
-
+palette = ['#FC4100', '#FFC55A', '#00215E']
 def boxplot_performance():
     data = []
     for log_file in os.listdir('results'):
@@ -39,10 +39,10 @@ def boxplot_performance():
         data_met = data[data['metric'] == metric]
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4, 8))
         g = sns.barplot(data=data_met, y='score', x='region', hue='model type', ax=ax, capsize=0.3,
-                        palette=['#808000', '#9897A9', '#726EFF'], hue_order=hue_order,
+                        palette=palette, hue_order=hue_order,
                         edgecolor='white', order=order)
         sns.stripplot(y='score', x='region', hue='model type', data=data_met, dodge=True, ax=g, edgecolor='k',
-                      linewidth=0.6, palette=['#808000', '#9897A9', '#726EFF'], alpha=0.5,
+                      linewidth=0.6, palette=palette, alpha=0.5,
                       hue_order=hue_order)
         ax.yaxis.grid(True, alpha=0.3)
         ax.xaxis.grid(True, alpha=0.3)
