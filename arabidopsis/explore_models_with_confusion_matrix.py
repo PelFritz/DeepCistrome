@@ -87,6 +87,7 @@ masked_cm = norm_cm[:-1, :-1]
 masked_cm[np.diag_indices_from(masked_cm)] = 0
 cm = cm[:-1, :-1]
 cm[np.diag_indices_from(cm)] = 0
+pd.DataFrame(masked_cm, columns=labels[0], index=labels[0]).to_csv('data/diagonal_masked_cm.csv')
 sns.heatmap(data=masked_cm, ax=ax3[1, 0], xticklabels=labels[0], yticklabels=labels[0],
             cbar_ax=ax3[1, 2], cmap='Reds')
 x_tick_pos = [i + 0.5 for i in range(len(labels[0]))]
