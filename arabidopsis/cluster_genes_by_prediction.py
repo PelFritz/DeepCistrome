@@ -85,8 +85,7 @@ for chrom_name in ['1', '2', '3', '4', '5']:
 
 prom_terms = np.concatenate(prom_terms, axis=0)
 genes_all = np.concatenate(genes_all, axis=0)
-pd.DataFrame(prom_terms, index=genes_all, columns=tf_families).to_csv(path_or_buf='data/prom_term_predictions.csv')
-print(prom_terms.shape, genes_all.shape)
+data_to_save = pd.DataFrame(prom_terms, index=genes_all, columns=tf_families)
 
 # Perform UMAP, cluster embeddings to get clusters
 fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(9, 8))
@@ -101,6 +100,12 @@ colors = ['silver', '#be398d', '#c595fa', '#1a2421', '#ff7926', '#008080', '#dc1
           '#79baec', '#202e51', '#7B3F00', '#be5504', '#0000ff', '#fc6c85', '#e6b400', '#ffefd5', '#7fffd4',
           '#bdb76b', '#dda0dd', '#2f4f4f', '#f5c26b', '#cae7d3', '#98f5ff', '#cd3333']
 predicted_cluster_cols = [colors[x] for x in clusters]
+
+data_to_save['cluster'] = clusters
+data_to_save['cluster_col'] = predicted_cluster_cols
+print(data_to_save.head())
+data_to_save.to_csv(path_or_buf='data/prom_term_predictions.csv')
+
 ax.scatter(embeddings[:, 0], embeddings[:, 1], c=predicted_cluster_cols, s=4)
 ax.set_xlabel(f'Dim 1')
 ax.set_ylabel(f'Dim 2')
