@@ -115,24 +115,31 @@ ax.set_title('Promoters clustered by predicted TFBS')
 plt.savefig(f"results/Figures/umap_prom_terms.svg", bbox_inches='tight', dpi=300, format='svg')
 plt.show()
 
+cluster_id = {0: '-', 1: 'I', 2: 'II', 3: 'III', 4: 'IV', 5: 'V', 6: 'VI', 7: 'VII', 8: 'VIII', 9: 'IX', 10: 'X',
+              11: 'XI', 12: 'XII', 13: 'XIII', 14: 'XIV'}
 cluster_to_probs = []
+cluster_idx_cluster_id = []
 for cluster_idx in np.unique(clusters):
     pred_copy = prom_terms.copy()
     pred_copy = pred_copy[np.where(clusters == cluster_idx)[0]]
     print(f'Cluster size: {pred_copy.shape[0]}')
     cluster_props = np.sum(pred_copy, axis=0)/np.sum(np.sum(pred_copy, axis=0))
     cluster_to_probs.append(cluster_props)
+    cluster_idx_cluster_id.append(cluster_id[cluster_idx])
 
-cluster_to_probs = pd.DataFrame(cluster_to_probs, columns=[x.replace('_tnt', '') for x in tf_families])
+cluster_to_probs = pd.DataFrame(cluster_to_probs, columns=[x.replace('_tnt', '') for x in tf_families],
+                                index=cluster_idx_cluster_id)
 print(cluster_to_probs.head())
 row_cols = pd.Series(np.unique(clusters))
 row_cols = row_cols.map({k: colors[k] for k in np.unique(clusters)})
+row_cols.rename(index=cluster_id, inplace=True)
 g = sns.clustermap(data=cluster_to_probs, cmap='Reds', linewidths=0.5, figsize=(15, 5),
                    cbar_pos=(.02, .06, .2, .04),
                    cbar_kws={"orientation": "horizontal", "pad": 0.01},
-                   row_colors=row_cols, yticklabels=False, col_colors=None,
+                   row_colors=row_cols, yticklabels=True, col_colors=None,
                    col_cluster=False)
-g.ax_heatmap.tick_params(right=False)
+g.ax_heatmap.set_yticklabels(g.ax_heatmap.get_yticklabels(), rotation=0)
+#g.ax_heatmap.tick_params(right=True)
 plt.tight_layout()
 plt.savefig(f"results/Figures/umap_prom_terms_heatmap.svg", bbox_inches='tight', dpi=300, format='svg')
 plt.show()
