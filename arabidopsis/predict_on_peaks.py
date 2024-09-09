@@ -51,8 +51,9 @@ for peaks in os.listdir('data/peaks'):
 
 data = pd.DataFrame({'TF': tf_name, 'Predicted Percentage': pred_perc})
 data.sort_values(by=['Predicted Percentage'], ascending=False, inplace=True)
+data.to_csv(path_or_buf='results/predicetd_percentages_per_family.csv', index=False)
 fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(15, 6))
-sns.barplot(x='TF', y='Predicted Percentage', data=data, ax=ax, errorbar=None, color='#726EFF')
+sns.barplot(x='TF', y='Predicted Percentage', data=data, ax=ax, errorbar=None, color='black')
 ax.yaxis.grid(True, alpha=0.3)
 ax.xaxis.grid(True, alpha=0.3)
 ax.set_axisbelow(True)
