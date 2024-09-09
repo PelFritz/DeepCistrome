@@ -32,7 +32,7 @@ def create_coords(peak_file, chrom):
 overlap_mat = pd.read_csv(filepath_or_buffer='data/overlap_matrix.bed', sep='\t', index_col=0, nrows=3)
 tfs = overlap_mat.columns.tolist()
 
-tf_name, pred_perc = [], []
+tf_name, pred_perc, total_bound, pred_bound = [], [], [], []
 for peaks in os.listdir('data/peaks'):
     print(peaks)
     pred_sum, true_sum = 0, 0
@@ -48,8 +48,11 @@ for peaks in os.listdir('data/peaks'):
 
     tf_name.append(peaks.split('.bed')[0])
     pred_perc.append(pred_sum / true_sum)
+    total_bound.append(true_sum)
+    pred_bound.append(pred_sum)
 
-data = pd.DataFrame({'TF': tf_name, 'Predicted Percentage': pred_perc})
+data = pd.DataFrame({'TF': tf_name, 'Predicted Percentage': pred_perc,
+                     'Total Bound': total_bound, 'Predicted Bound': pred_bound})
 data.sort_values(by=['Predicted Percentage'], ascending=False, inplace=True)
 data.to_csv(path_or_buf='results/predicetd_percentages_per_family.csv', index=False)
 fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(15, 6))
