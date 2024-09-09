@@ -17,3 +17,19 @@ sns.clustermap(confusion_matrix, col_linkage=linkage, row_linkage=linkage, cmap=
 plt.savefig(f"results/Figures/masked_confusion_mat.svg", bbox_inches='tight',
             dpi=300, format='svg')
 plt.show()
+
+# GBox binding TFs
+gbox_tfs = ['FAR1_tnt', 'CAMTA_tnt', 'BES1_tnt', 'BZR_tnt', 'bHLH_tnt', 'bZIP_tnt']
+sns.clustermap(confusion_matrix.loc[gbox_tfs, :], col_linkage=linkage, cmap='Reds', figsize=(10, 3),
+               row_cluster=False)
+plt.savefig(f"results/Figures/masked_confusion_mat_gbox.svg", bbox_inches='tight',
+            dpi=300, format='svg')
+plt.show()
+
+# AT-rich homeobox-like
+at_rich = ['ARID_tnt', 'ZFHD_tnt', 'HB_tnt', 'Homeobox_ecoli', 'C2C2YABBY_tnt', 'Homeobox_tnt']
+sns.clustermap(confusion_matrix.loc[at_rich, :], col_linkage=linkage, cmap='Reds', figsize=(10, 3),
+               row_cluster=False)
+plt.savefig(f"results/Figures/masked_confusion_mat_at_rich.svg", bbox_inches='tight',
+            dpi=300, format='svg')
+plt.show()
