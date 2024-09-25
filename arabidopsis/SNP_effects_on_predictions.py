@@ -102,6 +102,9 @@ for row_idx, chrom in enumerate(['1', '2', '3', '4', '5']):
     mutation_effect = pd.DataFrame(mutation_effect, columns=tf_families, index=snp_identifiers)
     print(mutation_effect.head(10))
     sns.heatmap(mutation_effect, cmap='coolwarm', ax=ax[row_idx])
+    ax[row_idx].set_yticks([])
+    #ax[1].set_yticks(['2.10914316.C_G'])
+    #ax[4].set_yticks(['5.18022324.C_T'])
     #for i in range(mutation_effect.shape[1] + 1):
     #    ax[row_idx].axvline(i, color='white', lw=1)
     print(predictions_original.shape, predictions_mutated.shape)
