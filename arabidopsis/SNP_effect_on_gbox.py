@@ -42,6 +42,30 @@ def combine_mult_and_diffref(mult, orig_inp, bg_data):
     return to_return
 
 
+def create_dataset(chrom, genome, promoter_coords, promoter_size=1000):
+    onehot_dict = {'A': [1, 0, 0, 0],
+                   'C': [0, 1, 0, 0],
+                   'G': [0, 0, 1, 0],
+                   'T': [0, 0, 0, 1]}
+    genome = Fasta(genome, as_raw=True, read_ahead=10000, sequence_always_upper=True)
+    promoter_coords[[0, 9]] = promoter_coords[[0, 9]].astype('str')
+    promoter_coords = promoter_coords[promoter_coords[9] == chrom]
+
+    seqs, snp_seqs, snp_ids = [], [], []
+    for coord in promoter_coords.values:
+        chrom, start, end, gene_id, pheno = coord[9], coord[10], coord[11], coord[12], coord[8]
+        snp_ref, snp_alt, snp_pos = coord[3], coord[4], coord[1]-1
+        enc_seq = one_hot_encode(genome[chrom][start:end])
+        enc_seq_snp = one_hot_encode(genome[chrom][start:end])
+        enc_seq_snp[snp_pos - start, :] = onehot_dict[snp_alt]
+        if enc_seq.shape[0] == promoter_size:
+            seqs.append(enc_seq)
+            snp_seqs.append(enc_seq_snp)
+            snp_ids.append(f"{chrom}.{snp_pos+1}.{snp_ref}_{snp_alt}.{gene_id}.{pheno}")
+
+    return np.array(seqs), np.array(snp_seqs), snp_ids
+
+
 chroms = ['2', '5']
 phenos = ['Mo98', 'clim-bio11']
 tfs = ['bZIP_tnt', 'BES1_tnt']
@@ -87,30 +111,6 @@ for chr_name, pheno, tf in zip(chroms, phenos, tfs):
     print(inters_results.head())
     print(gwas_hits.shape)
     print(inters_results.shape)
-
-
-    def create_dataset(chrom, genome, promoter_coords, promoter_size=1000):
-        onehot_dict = {'A': [1, 0, 0, 0],
-                       'C': [0, 1, 0, 0],
-                       'G': [0, 0, 1, 0],
-                       'T': [0, 0, 0, 1]}
-        genome = Fasta(genome, as_raw=True, read_ahead=10000, sequence_always_upper=True)
-        promoter_coords[[0, 9]] = promoter_coords[[0, 9]].astype('str')
-        promoter_coords = promoter_coords[promoter_coords[9] == chrom]
-
-        seqs, snp_seqs, snp_ids = [], [], []
-        for coord in promoter_coords.values:
-            chrom, start, end, gene_id, pheno = coord[9], coord[10], coord[11], coord[12], coord[8]
-            snp_ref, snp_alt, snp_pos = coord[3], coord[4], coord[1]-1
-            enc_seq = one_hot_encode(genome[chrom][start:end])
-            enc_seq_snp = one_hot_encode(genome[chrom][start:end])
-            enc_seq_snp[snp_pos - start, :] = onehot_dict[snp_alt]
-            if enc_seq.shape[0] == promoter_size:
-                seqs.append(enc_seq)
-                snp_seqs.append(enc_seq_snp)
-                snp_ids.append(f"{chrom}.{snp_pos+1}.{snp_ref}_{snp_alt}.{gene_id}.{pheno}")
-
-        return np.array(seqs), np.array(snp_seqs), snp_ids
 
 
     chrom = chr_name
