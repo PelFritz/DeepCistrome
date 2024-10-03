@@ -6,6 +6,7 @@ from tensorflow.keras.models import load_model
 import seaborn as sns
 import matplotlib.pyplot as plt
 import os
+sns.set_context(context="paper", rc={"font.size":40,"axes.titlesize":14,"axes.labelsize":14})
 
 
 def create_dataset(genome, coords):
@@ -51,17 +52,15 @@ for peaks in os.listdir('data/peaks'):
     total_bound.append(true_sum)
     pred_bound.append(pred_sum)
 
-data = pd.DataFrame({'TF': tf_name, 'Predicted Percentage': pred_perc,
+data = pd.DataFrame({'TF': tf_name, 'sensitivity': pred_perc,
                      'Total Bound': total_bound, 'Predicted Bound': pred_bound})
-data.sort_values(by=['Predicted Percentage'], ascending=False, inplace=True)
+data.sort_values(by=['sensitivity'], ascending=True, inplace=True)
 data.to_csv(path_or_buf='results/predicetd_percentages_per_family.csv', index=False)
-fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(15, 6))
-sns.barplot(x='TF', y='Predicted Percentage', data=data, ax=ax, errorbar=None, color='black')
-ax.yaxis.grid(True, alpha=0.3)
-ax.xaxis.grid(True, alpha=0.3)
-ax.set_axisbelow(True)
-plt.axhline(y=0.5, color='silver', linestyle='--')
-plt.xticks(rotation=90)
+fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4, 10))
+sns.barplot(y='TF', x='sensitivity', data=data, ax=ax, errorbar=None, color='black')
+ax.spines[['right', 'top']].set_visible(False)
+ax.set_xlim(0, 1)
+plt.axvline(x=0.5, color='silver', linestyle='--')
 fig.tight_layout()
 plt.savefig(f"results/Figures/performance_on_peaks_per_tf.svg", bbox_inches='tight',
             dpi=300, format='svg')
