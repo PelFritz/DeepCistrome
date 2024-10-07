@@ -65,4 +65,3 @@ for level in [1, 2]:
                                             'XIII', 'XIV']),
             color=alt.Color('Count:Q').scale(scheme='purplered'), size='Percentage:Q')
         chart.save(f"results/Figures/{'_'.join(main_bin.split(' '))}_enrichment_analysis_level_{level}_mercator_normalised.svg")
-
