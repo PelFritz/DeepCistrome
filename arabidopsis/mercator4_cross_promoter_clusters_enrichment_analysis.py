@@ -63,5 +63,5 @@ for level in [1, 2]:
             y='mercator_sub_bin', x=alt.X('cluster',
                                       sort=['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII',
                                             'XIII', 'XIV']),
-            color=alt.Color('Count:Q').scale(scheme='purplered'), size='Percentage:Q')
+            color=alt.Color('Percentage:Q').scale(scheme='purplered'), size='Percentage:Q')
         chart.save(f"results/Figures/{'_'.join(main_bin.split(' '))}_enrichment_analysis_level_{level}_mercator_normalised.svg")
