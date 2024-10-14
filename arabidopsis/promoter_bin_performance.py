@@ -111,14 +111,14 @@ tbs_data_pred = tbs_data_pred.groupby(by='Bin').sum().reset_index()
 tbs_data_pred.sort_values(by='Bin', ascending=True, inplace=True)
 perc_pred_cor = tbs_data_pred['num_tbs'].values / tbs_data_true['num_tbs'].values
 tbs_data_pred['num_tbs'] = tbs_data_pred['num_tbs']/tbs_data_pred['num_tbs'].sum()
-tbs_data_pred['region'] = ['promoter' if idx <= 18 else 'terminator' for idx in range(1, 38)]
+tbs_data_pred['region'] = ['upstream' if idx <= 18 else 'downstream' for idx in range(1, 38)]
 
 fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(18, 6))
 sns.barplot(x='Bin', y='num_tbs', hue='region', data=tbs_data_pred, ax=ax, estimator='sum', errorbar=None,
             palette=['#F4CE14', '#379777'])
-sns.pointplot(data=tbs_data_pred[tbs_data_pred['region'] == 'promoter'], x='Bin', y='num_tbs', errorbar=None,
+sns.pointplot(data=tbs_data_pred[tbs_data_pred['region'] == 'upstream'], x='Bin', y='num_tbs', errorbar=None,
               ax=ax, estimator='sum', color='#EE4E4E')
-terms = tbs_data_pred[tbs_data_pred['region'] == 'terminator']
+terms = tbs_data_pred[tbs_data_pred['region'] == 'downstream']
 terms = terms[terms['Bin'] > 19]
 sns.pointplot(data=terms, x='Bin', y='num_tbs', errorbar=None, ax=ax, estimator='sum', color='#EE4E4E')
 ax.set_ylim(0.024, 0.050)
