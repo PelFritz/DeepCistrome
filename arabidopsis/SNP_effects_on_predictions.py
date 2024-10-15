@@ -21,6 +21,7 @@ gwas_hits = gwas_hits[['chrom', 'start', 'end', 'snp.ref', 'snp.alt', 'maf', 'sn
                        'snp.annotations.0.impact', 'study.phenotype.name']]
 #gwas_hits = gwas_hits[gwas_hits['maf'] < 0.05]
 print(gwas_hits.head())
+print(f"Total number of GWAS hits {gwas_hits.shape[0]}")
 def get_promoter_coords(upstream=1000, downstream=500):
     gene_models = pr.read_gtf('data/annotation/Arabidopsis_thaliana.TAIR10.59.gtf', as_df=True)
     gene_models = gene_models[gene_models['Feature'] == 'gene']
@@ -43,6 +44,8 @@ inters_results = BedTool.from_dataframe(gwas_hits).intersect('data/promoter_coor
 inters_results = inters_results.to_dataframe(disable_auto_names=True, header=None)
 inters_results.drop_duplicates(keep='first', inplace=True, subset=[0, 1])
 print(inters_results.head())
+print(f"Total number of GWAS hits intersecting promoters {inters_results.shape[0]}")
+
 
 
 def create_dataset(chrom, genome, promoter_coords):
@@ -98,3 +101,6 @@ for row_idx, chrom_name in enumerate(['1', '2', '3', '4', '5']):
 snp_effect_preds = pd.concat(snp_effect_preds)
 print(snp_effect_preds.head())
 snp_effect_preds.to_csv('data/snp_effect_on_cis_regions.csv')
+total = snp_effect_preds.shape[0]
+subset_with_effects = len(np.where(snp_effect_preds.sum(axis=1) != 0)[0])
+print(f'Total: {total}, those with effects {subset_with_effects}, proportion {subset_with_effects/total}')
