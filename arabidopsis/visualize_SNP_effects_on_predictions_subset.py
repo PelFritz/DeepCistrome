@@ -79,5 +79,8 @@ ax2.spines[['right', 'top']].set_visible(False)
 ax2.set_xlim(0, 100)
 fig2.tight_layout()
 plt.savefig(f"results/Figures/snp_effects_on_cis_regions_count_plot_subset.svg", bbox_inches='tight', dpi=300, format='svg')
+plt.savefig(f"results/Figures/snp_effects_on_cis_regions_count_plot_subset.png", bbox_inches='tight', dpi=300,
+            format='png')
+
 plt.show()
 print(size_of_all_overlapping_snps_with_effect/size_of_all_overlapping_snps)
