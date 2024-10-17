@@ -94,7 +94,8 @@ data = pd.DataFrame(data={'model': ['model', 'd-baseline', 's-baseline'],
                           'accuracy':[len(np.where(predictions_model['bound'] > 0)[0])/predictions_model.shape[0],
                                       len(np.where(predictions_di['bound'] > 0)[0])/predictions_di.shape[0],
                                       len(np.where(predictions_si['bound'] > 0)[0])/predictions_si.shape[0],] })
-
+print(f'Number of MOA peaks: {predictions_model.shape[0]}')
+print(data.head())
 fig1, ax1 = plt.subplots(nrows=1, ncols=1, figsize=(4, 8))
 data.sort_values(by='model', inplace=True)
 sns.barplot(x='model', y='accuracy', hue='model', data=data, ax=ax1, palette=['#00215E', '#FC4100', '#FFC55A'],
